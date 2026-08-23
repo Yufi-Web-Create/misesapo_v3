@@ -12,3 +12,5 @@
 - 赤ランプ（AttentionItem）は理由コード（`needs_admin_approval`, `unread_customer_message`, `ai_needs_decision`, `failed`, `qa_limit_reached`, `deadline_risk`, `pending_money_decision`）ごとにレコードを持ち、該当理由が解消された時のみサーバー側でそのレコードを解決済みにする。画面を開いただけでは解決しない。
 - 開発機のリソース制約（V1のARCHITECTURE.md記載: 2017 MacBook Pro/Core i5/RAM8GB相当）を踏襲し、Dockerを必須にしない。Supabase CLIのローカルスタックは任意（Docker必要）とし、Docker無しでもリモートのSupabase無料プロジェクト接続、またはmigration SQLのレビューのみで開発を継続できるようにする。
 - E2Eテストは実際のブラウザ操作をPlaywrightで行うが、外部Supabaseプロジェクトが必要なため、CI/ローカルでSupabaseが利用できない場合はunit/integrationテスト（DBアクセスをモックしたリポジトリ層のテスト）で代替する。E2Eの実行手順はdocs/09-test-strategy.mdに明記する。
+- Supabaseの型生成（`supabase gen types typescript`）は、実際のSupabaseプロジェクトが必要なため本セッションでは実行していない。`.from("table_name")`呼び出しは現状ゆるい型（`any`相当）になっている。開発用Supabaseプロジェクト接続後、`npm run db:migrate`でmigration適用→型生成を行い、`lib/supabase/database.types.ts`を追加して各クライアントに型を付与することをBLOCKERS.mdではなく通常のフォローアップ実装として次のイテレーションで行う。
+- Supabase Authのメール確認（Confirm email）設定は環境依存のため、開発用プロジェクトでは無効化するか、`register()`の`status: "check-email"`分岐で確認メール待ちを案内する。V1同様、magic link/OTPは採用しない。
