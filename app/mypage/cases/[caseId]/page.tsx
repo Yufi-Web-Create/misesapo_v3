@@ -3,6 +3,7 @@ import { verifyCustomerSession } from "@/lib/auth/verify-session";
 import { CASE_STATUS_LABELS } from "@/lib/state-machine/labels";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CaseChat } from "./case-chat";
+import { QuoteResponse } from "./quote-response";
 
 export const dynamic = "force-dynamic";
 
@@ -46,12 +47,29 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ cas
     .limit(1)
     .maybeSingle();
 
+  const { data: pendingQuote } = await supabase
+    .from("quotes")
+    .select("id, amount_cents, scope_summary")
+    .eq("case_id", caseId)
+    .eq("status", "sent")
+    .maybeSingle();
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <h1 className="text-2xl font-bold text-ink-900">{caseRow.title}</h1>
       <p className="mt-1 inline-block rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-brand-700">
         {CASE_STATUS_LABELS[caseRow.status as keyof typeof CASE_STATUS_LABELS] ?? caseRow.status}
       </p>
+
+      {pendingQuote ? (
+        <div className="mt-6">
+          <QuoteResponse
+            quoteId={pendingQuote.id}
+            amountCents={pendingQuote.amount_cents}
+            scopeSummary={pendingQuote.scope_summary}
+          />
+        </div>
+      ) : null}
 
       {requirement ? (
         <div className="mt-6 rounded-2xl border border-black/5 p-6">
